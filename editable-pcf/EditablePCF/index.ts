@@ -36,7 +36,7 @@ export class EditablePCF implements ComponentFramework.StandardControl<IInputs, 
         textbox.type = 'text';
         textbox.style.display = 'none';
 
-        if (context.parameters.Name.raw) {
+        if (context.parameters.Name.raw != null) {
             textbox.value = context.parameters.Name.raw;
 
             const messageContainer = document.createElement('div');
