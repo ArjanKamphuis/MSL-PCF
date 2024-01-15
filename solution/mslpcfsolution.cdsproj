@@ -50,6 +50,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\editable-pcf\editable-pcf.pcfproj" />
+    <ProjectReference Include="..\Formatting-API\Formatting-API.pcfproj" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
