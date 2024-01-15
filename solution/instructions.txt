@@ -1,0 +1,5 @@
+increment version in manifest
+MSBuild ** /t:build /restore
+pac solution delete --solution-name MslPcfSolution
+pac solution import
+pac solution publish

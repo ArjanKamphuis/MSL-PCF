@@ -1,0 +1,38 @@
+.MslPcf\.TSWebAPI {
+    font-family: 'SegoeUI-Semibold', 'Segoe UI Semibold', 'Segoe UI Regular', 'Segoe UI';
+    color: #1160B7;
+}
+
+.MslPcf\.TSWebAPI .TSWebAPI_Container {
+    overflow-x: auto;
+}
+
+.MslPcf\.TSWebAPI .SampleControl_WebAPI_Header {
+    color: rgb(51, 51, 51);
+    font-size: 1rem;
+    padding-top: 20px;
+}
+
+.MslPcf\.TSWebAPI .result_container {
+    padding-bottom: 20px;
+}
+
+.MslPcf\.TSWebAPI .SampleControl_WebAPI_ButtonClass {
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+    color: #1160B7;
+    background-color: #FFFFFF;
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+    min-width: 300px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.MslPcf\.TSWebAPI .SampleControl_WebAPI_ButtonClass:hover {
+    background-color: #1160B7;
+    color: #FFFFFF;
+}
