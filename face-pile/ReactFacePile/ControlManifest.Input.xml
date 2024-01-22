@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <control namespace="MslPcf" constructor="ReactFacePile" version="0.0.1" display-name-key="ReactFacePile" description-key="ReactFacePile description" control-type="virtual" >
+    <property name="numberOfFaces" display-name-key="NumberOfFaces_Display_Key" description-key="NumberOfFaces_Desc_Key" of-type="Whole.None" usage="bound" required="false" />
+    <resources>
+      <code path="index.ts" order="1"/>
+      <platform-library name="React" version="16.8.6" />
+      <platform-library name="Fluent" version="8.29.0" />
+      <css path="css/ReactFacePile.css" order="1" />
+      <resx path="strings/ReactFacePile.1033.resx" version="1.0.0" />
+    </resources>
+  </control>
+</manifest>
