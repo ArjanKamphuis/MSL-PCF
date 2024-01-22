@@ -3,3 +3,5 @@ MSBuild ** /t:build /restore
 pac solution delete --solution-name MslPcfSolution
 pac solution import
 pac solution publish
+
+MSBuild; pac solution delete --solution-name MslPcfSolution; pac solution import; pac solution publish;

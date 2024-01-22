@@ -52,6 +52,7 @@
     <ProjectReference Include="..\editable-pcf\editable-pcf.pcfproj" />
     <ProjectReference Include="..\Formatting-API\Formatting-API.pcfproj" />
     <ProjectReference Include="..\TS-Web-API\ts-web-api.pcfproj" />
+    <ProjectReference Include="..\Popup-Component\Popup-Component.pcfproj" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
