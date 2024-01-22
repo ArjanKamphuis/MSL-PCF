@@ -1,0 +1,1 @@
+https://learn.microsoft.com/en-us/training/paths/create-components-power-apps-component-framework/
