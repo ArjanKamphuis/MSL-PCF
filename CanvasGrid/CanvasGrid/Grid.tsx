@@ -6,10 +6,12 @@ import { IRenderFunction } from "@fluentui/react/lib/Utilities";
 import { ConstrainMode, DetailsList, DetailsListLayoutMode, DetailsRow, IColumn, IDetailsHeaderProps, IDetailsRowProps, IDetailsRowStyles } from "@fluentui/react/lib/DetailsList";
 import { ScrollablePane, ScrollbarVisibility } from "@fluentui/react/lib/ScrollablePane";
 import { Overlay } from "@fluentui/react/lib/Overlay";
-import { useConst, useForceUpdate } from "@fluentui/react-hooks";
+import { useConst, useEventCallback, useForceUpdate } from "@fluentui/react-hooks";
 import { ContextualMenu, DirectionalHint, IContextualMenuItem, IContextualMenuProps } from "@fluentui/react/lib/ContextualMenu";
 import { IconButton } from "@fluentui/react/lib/Button";
 import { Link } from "@fluentui/react/lib/Link";
+import { IDropdownOption } from "@fluentui/react/lib/Dropdown";
+import { SearchBar, SearchBarProps } from "./SearchBar";
 
 type DataSet = ComponentFramework.PropertyHelper.DataSetApi.EntityRecord & IObjectWithKey;
 
@@ -83,28 +85,19 @@ export const Grid = React.memo((props: GridProps) => {
 
     const [isComponentLoading, setIsComponentLoading] = React.useState<boolean>(false);
     const [contextualMenuProps, setContextualMenuProps] = React.useState<IContextualMenuProps>();
+    const [searchText, setSearchText] = React.useState<string>('');
+    const [searchColumn, setSearchColumn] = React.useState<string>('');
 
     const forceUpdate = useForceUpdate();
 
-    const onSelectionChanged = (): void => {
+    const onSelectionChanged = useEventCallback((): void => {
         const items: DataSet[] = selection.getItems() as DataSet[];
         const selected: string[] = selection.getSelectedIndices().map((index: number) => {
             return items[index] && items[index].getRecordId();
         });
         setSelectedRecords(selected);
         forceUpdate();
-    };
-
-    // TODO: find a way to use useCallback and useConst together.
-    //
-    // const onSelectionChanged = React.useCallback((): void => {
-    //     const items: DataSet[] = selection.getItems() as DataSet[];
-    //     const selected: string[] = selection.getSelectedIndices().map((index: number) => {
-    //         return items[index] && items[index].getRecordId();
-    //     });
-    //     setSelectedRecords(selected);
-    //     forceUpdate();
-    // }, [forceUpdate, selection, setSelectedRecords]);
+    });
 
     const selection: Selection = useConst(() => {
         return new Selection({ selectionMode: SelectionMode.single, onSelectionChanged });
@@ -189,10 +182,17 @@ export const Grid = React.memo((props: GridProps) => {
         return null;
     };
 
-    const items: (DataSet | undefined)[] = React.useMemo(() => {
+    const items: DataSet[] = React.useMemo(() => {
         setIsComponentLoading(false);
-        return sortedRecordIds.map(id => records[id]);
-    }, [records, sortedRecordIds]);
+        const sortedRecords: DataSet[] = sortedRecordIds.map(id => records[id]);
+        if (searchColumn && searchText) {
+            return sortedRecords.filter(r => {
+                const value: string = r.getFormattedValue(searchColumn).toString();
+                return value.toLowerCase().includes(searchText);
+            });
+        }
+        return sortedRecords;
+    }, [records, searchColumn, searchText, sortedRecordIds]);
 
     const gridColumns: IColumn[] = React.useMemo(() => {
         return columns
@@ -233,41 +233,63 @@ export const Grid = React.memo((props: GridProps) => {
         loadNextPage();
     }, [loadNextPage]);
 
+    const columnList: IDropdownOption[] = React.useMemo(() => {
+        return gridColumns.map(c => {
+            return { key: c.key, text: c.name } as IDropdownOption;
+        });
+    }, [gridColumns]);
+
+    const onSearchChange = React.useCallback((newValue: string): void => setSearchText(newValue), []);
+    const onDropdownChange = React.useCallback((newValue: string): void => setSearchColumn(newValue), []);
+
+    const searchBarProps: SearchBarProps = React.useMemo(() => {
+        return {
+            label: 'Search Column:',
+            options: columnList,
+            search: searchText,
+            onSearchChange,
+            onDropdownChange
+        };
+    }, [columnList, onDropdownChange, onSearchChange, searchText]);
+
     return (
-        <Stack verticalFill grow style={rootContainerStyle}>
-            <Stack.Item grow style={{ position: 'relative', backgroundColor: 'white' }}>
-                <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
-                    <DetailsList
-                        columns={gridColumns}
-                        onRenderItemColumn={onRenderItemColumn}
-                        onRenderDetailsHeader={onRenderDetailsHeader}
-                        items={items}
-                        setKey={`set${currentPage}`}
-                        initialFocusedIndex={0}
-                        checkButtonAriaLabel="select row"
-                        layoutMode={DetailsListLayoutMode.fixedColumns}
-                        constrainMode={ConstrainMode.unconstrained}
-                        selection={selection}
-                        onItemInvoked={onNavigate}
-                        onRenderRow={onRenderRow}
-                    ></DetailsList>
-                    {contextualMenuProps && <ContextualMenu {...contextualMenuProps} />}
-                </ScrollablePane>
-                {(itemsLoading || isComponentLoading) && <Overlay />}
-            </Stack.Item>
-            <Stack.Item>
-                <Stack horizontal style={{ width: '100%', paddingLeft: 8, paddingRight: 8 }}>
-                    <Stack.Item grow align="center">
-                        {!isFullScreen && <Link onClick={onFullScreen}>{resources.getString('Label_ShowFullScreen')}</Link>}
-                    </Stack.Item>
-                    <IconButton alt="First Page" iconProps={{ iconName: 'Rewind' }} disabled={!hasPreviousPage || isComponentLoading || itemsLoading} onClick={onFirstPage} />
-                    <IconButton alt="Previous Page" iconProps={{ iconName: 'Previous' }} disabled={!hasPreviousPage || isComponentLoading || itemsLoading} onClick={onPreviousPage} />
-                    <Stack.Item align="center">
-                        {stringFormat(resources.getString('Label_Grid_Footer'), currentPage.toString(), selection.getSelectedCount().toString())}
-                    </Stack.Item>
-                    <IconButton alt="Next Page" iconProps={{ iconName: 'Next' }} disabled={!hasNextPage || isComponentLoading || itemsLoading} onClick={onNextPage} />
-                </Stack>
-            </Stack.Item>
+        <Stack verticalFill>
+            <SearchBar {...searchBarProps} />
+            <Stack verticalFill grow style={rootContainerStyle}>
+                <Stack.Item grow style={{ position: 'relative', backgroundColor: 'white' }}>
+                    <ScrollablePane scrollbarVisibility={ScrollbarVisibility.auto}>
+                        <DetailsList
+                            columns={gridColumns}
+                            onRenderItemColumn={onRenderItemColumn}
+                            onRenderDetailsHeader={onRenderDetailsHeader}
+                            items={items}
+                            setKey={`set${currentPage}`}
+                            initialFocusedIndex={0}
+                            checkButtonAriaLabel="select row"
+                            layoutMode={DetailsListLayoutMode.fixedColumns}
+                            constrainMode={ConstrainMode.unconstrained}
+                            selection={selection}
+                            onItemInvoked={onNavigate}
+                            onRenderRow={onRenderRow}
+                        ></DetailsList>
+                        {contextualMenuProps && <ContextualMenu {...contextualMenuProps} />}
+                    </ScrollablePane>
+                    {(itemsLoading || isComponentLoading) && <Overlay />}
+                </Stack.Item>
+                <Stack.Item>
+                    <Stack horizontal style={{ width: '100%', paddingLeft: 8, paddingRight: 8 }}>
+                        <Stack.Item grow align="center">
+                            {!isFullScreen && <Link onClick={onFullScreen}>{resources.getString('Label_ShowFullScreen')}</Link>}
+                        </Stack.Item>
+                        <IconButton alt="First Page" iconProps={{ iconName: 'Rewind' }} disabled={!hasPreviousPage || isComponentLoading || itemsLoading} onClick={onFirstPage} />
+                        <IconButton alt="Previous Page" iconProps={{ iconName: 'Previous' }} disabled={!hasPreviousPage || isComponentLoading || itemsLoading} onClick={onPreviousPage} />
+                        <Stack.Item align="center">
+                            {stringFormat(resources.getString('Label_Grid_Footer'), currentPage.toString(), selection.getSelectedCount().toString())}
+                        </Stack.Item>
+                        <IconButton alt="Next Page" iconProps={{ iconName: 'Next' }} disabled={!hasNextPage || isComponentLoading || itemsLoading} onClick={onNextPage} />
+                    </Stack>
+                </Stack.Item>
+            </Stack>
         </Stack>
     );
 });
