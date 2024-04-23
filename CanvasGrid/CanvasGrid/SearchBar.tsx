@@ -5,7 +5,6 @@ import { IStackTokens, Stack } from "@fluentui/react/lib/Stack";
 
 export type SearchBarProps = {
     label: string;
-    labelWidth?: string | number;
     options: IDropdownOption[];
     search: string;
     onSearchChange: (newValue: string) => void;

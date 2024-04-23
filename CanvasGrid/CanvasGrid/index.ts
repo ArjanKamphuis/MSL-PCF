@@ -61,6 +61,10 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
         this._currentPage++;
         this._context.parameters.records.paging.loadExactPage(this._currentPage);
     };
+    private _setPageSize = (pageSize: number): void => {
+        this._context.parameters.records.paging.setPageSize(pageSize);
+        this._loadFirstPage();
+    };
 
     private _onFullScreen = (): void => {
         this._context.mode.setFullScreen(true);
@@ -133,6 +137,7 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
             isFullScreen: this._isFullScreen,
             highlightValue: this._context.parameters.HighlightValue.raw,
             highlightColor: this._context.parameters.HighlightColor.raw,
+            pageSize: paging.pageSize,
             setSelectedRecords: this._setSelectedRecords,
             onNavigate: this._onNavigate,
             onSort: this._onSort,
@@ -140,6 +145,7 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
             loadFirstPage: this._loadFirstPage,
             loadPreviousPage: this._loadPreviousPage,
             loadNextPage: this._loadNextPage,
+            setPageSize: this._setPageSize,
             onFullScreen: this._onFullScreen
         };
         this._reactRoot.render(React.createElement(Grid, props));
@@ -150,7 +156,9 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
      * @returns an object based on nomenclature defined in manifest, expecting object[s] for property marked as "bound" or "output"
      */
     public getOutputs(): IOutputs {
-        return { FilteredRecordCount: this._filteredRecordCount };
+        return {
+            FilteredRecordCount: this._filteredRecordCount
+        };
     }
 
     /**
